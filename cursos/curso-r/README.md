@@ -80,11 +80,18 @@ curso-r/
 ├── modulo-06-visualizacion-ggplot2.md
 ├── modulo-07-estadistica-y-modelos.md
 ├── modulo-08-reportes-quarto-y-proyecto.md
-└── datos/
-    ├── generar_ventas.R               # script reproducible (semilla fija)
-    ├── ventas.csv                     # 3 120 filas: fecha, tienda, producto, precio, unidades
-    └── tiendas.csv                    # 12 tiendas: canal y región
+├── datos/
+│   ├── generar_ventas.R               # script reproducible (semilla fija)
+│   ├── ventas.csv                     # 3 120 filas: fecha, tienda, producto, precio, unidades
+│   └── tiendas.csv                    # 12 tiendas: canal y región
+└── latex/
+    ├── curso-r.tex                    # documento principal (portada, índice, preámbulo)
+    ├── capitulos/                     # un .tex por módulo (generados)
+    ├── convertir.py                   # regenera capitulos/ desde los .md (requiere pandoc)
+    └── curso-r.pdf                    # versión compilada
 ```
+
+**Versión LaTeX/PDF:** desde `latex/`, ejecuta `python3 convertir.py` (solo si editaste los `.md`) y luego `latexmk -pdf curso-r.tex`. También se puede subir la carpeta `latex/` a Overleaf y compilar con pdfLaTeX.
 
 ## Bibliografía general
 

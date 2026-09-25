@@ -1,0 +1,230 @@
+\chapter{Módulo 5 --- Transformar datos con dplyr}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Duración estimada:} 1.5 h teoría + 3.5 h práctica
+\item
+  \textbf{Objetivos de aprendizaje.} Al finalizar, la persona podrá:
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    \textbf{Aplicar} los verbos de \passthrough{\lstinline!dplyr!}
+    (\passthrough{\lstinline!filter!}, \passthrough{\lstinline!select!},
+    \passthrough{\lstinline!mutate!}, \passthrough{\lstinline!arrange!},
+    \passthrough{\lstinline!summarise!}) encadenados con
+    \passthrough{\lstinline!|>!}.
+  \item
+    \textbf{Calcular} indicadores agregados por grupo con
+    \passthrough{\lstinline!group\_by()!} /
+    \passthrough{\lstinline!.by!}.
+  \item
+    \textbf{Combinar} tablas con uniones
+    (\passthrough{\lstinline!left\_join!},
+    \passthrough{\lstinline!inner\_join!},
+    \passthrough{\lstinline!anti\_join!}).
+  \item
+    \textbf{Usar} \passthrough{\lstinline!lubridate!} y
+    \passthrough{\lstinline!stringr!} para trabajar con fechas y texto.
+  \item
+    \textbf{Analizar} el desempeño por canal, región y producto a partir
+    de datos crudos.
+  \end{enumerate}
+\end{itemize}
+
+\section{Contenidos}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Los cinco verbos principales y el \emph{pipe}.
+\item
+  \passthrough{\lstinline!mutate()!} con
+  \passthrough{\lstinline!if\_else()!} y
+  \passthrough{\lstinline!case\_when()!}.
+\item
+  \passthrough{\lstinline!group\_by()!} +
+  \passthrough{\lstinline!summarise()!};
+  \passthrough{\lstinline!count()!}; agrupación temporal con
+  \passthrough{\lstinline!.by!}.
+\item
+  Funciones de ventana: \passthrough{\lstinline!lag()!},
+  \passthrough{\lstinline!cumsum()!}, \passthrough{\lstinline!rank()!},
+  \passthrough{\lstinline!slice\_max()!}.
+\item
+  Uniones de tablas y llaves.
+\item
+  Fechas con \passthrough{\lstinline!lubridate!}:
+  \passthrough{\lstinline!year()!}, \passthrough{\lstinline!month()!},
+  \passthrough{\lstinline!floor\_date()!}.
+\item
+  Texto con \passthrough{\lstinline!stringr!}:
+  \passthrough{\lstinline!str\_detect()!},
+  \passthrough{\lstinline!str\_to\_upper()!},
+  \passthrough{\lstinline!str\_replace()!}.
+\end{enumerate}
+
+\section{Desarrollo}
+
+\begin{lstlisting}[language=R]
+library(tidyverse)
+ventas  <- read_csv("datos/ventas.csv", show_col_types = FALSE)
+tiendas <- read_csv("datos/tiendas.csv", show_col_types = FALSE)
+\end{lstlisting}
+
+\subsection{Los verbos básicos}
+
+\begin{lstlisting}[language=R]
+ventas |>
+  filter(producto == "Tablet", unidades >= 8) |>
+  select(fecha, tienda_id, unidades) |>
+  arrange(desc(unidades))
+
+ventas <- ventas |>
+  mutate(ingreso = precio * unidades)
+\end{lstlisting}
+
+\subsection{Resúmenes por grupo}
+
+\begin{lstlisting}[language=R]
+ventas |>
+  group_by(producto) |>
+  summarise(
+    unidades = sum(unidades, na.rm = TRUE),
+    ingreso  = sum(ingreso,  na.rm = TRUE),
+    ticket_promedio = ingreso / unidades
+  ) |>
+  arrange(desc(ingreso))
+
+ventas |> count(producto)                         # conteo rápido
+\end{lstlisting}
+
+\subsection{Uniones}
+
+\begin{lstlisting}[language=R]
+ventas_det <- ventas |>
+  left_join(tiendas, by = "tienda_id")
+
+ventas_det |>
+  summarise(ingreso = sum(ingreso, na.rm = TRUE), .by = c(canal, region)) |>
+  arrange(canal, desc(ingreso))
+
+# ¿Hay ventas de tiendas que no existen en el catálogo?
+ventas |> anti_join(tiendas, by = "tienda_id") |> nrow()   # 0
+\end{lstlisting}
+
+\subsection{Fechas}
+
+\begin{lstlisting}[language=R]
+mensual <- ventas_det |>
+  mutate(mes = floor_date(fecha, "month")) |>
+  summarise(ingreso = sum(ingreso, na.rm = TRUE), .by = c(mes, canal)) |>
+  arrange(canal, mes) |>
+  group_by(canal) |>
+  mutate(var_pct = (ingreso / lag(ingreso) - 1) * 100) |>
+  ungroup()
+mensual
+\end{lstlisting}
+
+\subsection{Texto}
+
+\begin{lstlisting}[language=R]
+ventas_det |>
+  filter(str_detect(producto, "Smartphone")) |>
+  mutate(producto = str_to_upper(producto)) |>
+  distinct(producto)
+\end{lstlisting}
+
+\section{Actividades y ejercicios}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  ¿Cuál fue la \textbf{tienda} con mayor ingreso anual? Muestra el top 3
+  con su canal y región.
+\item
+  Calcula la \textbf{participación (\%)} de cada canal en el ingreso
+  total.
+\item
+  Para cada producto, encuentra la \textbf{semana} de mayores unidades
+  vendidas (\passthrough{\lstinline!slice\_max()!}).
+\item
+  Compara el ingreso promedio semanal de \textbf{noviembre--diciembre}
+  vs.~el resto del año por producto.
+\item
+  Reto: con \passthrough{\lstinline!anti\_join()!}, verifica que cada
+  combinación tienda--semana tenga los 5 productos.
+\end{enumerate}
+
+\subsection{Soluciones}
+
+\begin{lstlisting}[language=R]
+# 1
+ventas_det |>
+  summarise(ingreso = sum(ingreso, na.rm = TRUE), .by = c(tienda_id, canal, region)) |>
+  slice_max(ingreso, n = 3)
+
+# 2
+ventas_det |>
+  summarise(ingreso = sum(ingreso, na.rm = TRUE), .by = canal) |>
+  mutate(participacion = ingreso / sum(ingreso) * 100)
+
+# 3
+ventas |>
+  summarise(unidades = sum(unidades, na.rm = TRUE), .by = c(producto, fecha)) |>
+  group_by(producto) |>
+  slice_max(unidades, n = 1, with_ties = FALSE)
+
+# 4
+ventas |>
+  mutate(temporada = if_else(month(fecha) %in% 11:12, "Nov-Dic", "Resto")) |>
+  summarise(ingreso_sem = sum(ingreso, na.rm = TRUE), .by = c(producto, temporada, fecha)) |>
+  summarise(promedio = mean(ingreso_sem), .by = c(producto, temporada)) |>
+  pivot_wider(names_from = temporada, values_from = promedio) |>
+  mutate(incremento_pct = (`Nov-Dic` / Resto - 1) * 100)
+
+# 5
+esperado <- expand_grid(
+  tienda_id = unique(ventas$tienda_id),
+  fecha     = unique(ventas$fecha),
+  producto  = unique(ventas$producto)
+)
+esperado |> anti_join(ventas, by = c("tienda_id", "fecha", "producto")) |> nrow()  # 0
+\end{lstlisting}
+
+\section{Evaluación (sumativa parcial)}
+
+\textbf{Mini-reporte de KPIs:} script que produzca una tabla con
+ingreso, unidades y ticket promedio por canal y región, más la variación
+mensual por canal. Se evalúa: resultados correctos (40 \%), uso
+idiomático de \passthrough{\lstinline!dplyr!} (30 \%), legibilidad (30
+\%).
+
+\section{Referencias verificadas}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Libro:} Wickham, H., Çetinkaya-Rundel, M., \& Grolemund, G.
+  (2023). \emph{R for Data Science} (2.ª ed.). O'Reilly Media. ISBN
+  978-1-4920-9740-2. Español: \url{https://davidrsch.github.io/r4ds-es/}
+  {[}ES{]} {[}OA{]} --- caps. ``Transformación de datos'', ``Uniones'',
+  ``Fechas y horas'', ``Cadenas''.
+\item
+  \textbf{Web:} R para Ciencia de Datos (traducción de la 1.ª ed.~por la
+  comunidad latinoamericana de R). \url{https://es.r4ds.hadley.nz/}
+  {[}ES{]} {[}OA{]} --- alternativa en español.
+\item
+  \textbf{Artículo:} Wickham, H., et al.~(2019). Welcome to the
+  tidyverse. \emph{Journal of Open Source Software, 4}(43), 1686.
+  \url{https://doi.org/10.21105/joss.01686} {[}EN{]} {[}OA{]}
+\item
+  \textbf{Video:} Gomila Salas, J. G. (Frogames). \emph{Curso completo
+  de R para Data Science con Tidyverse} {[}Video{]}. YouTube.
+  \url{https://www.youtube.com/watch?v=9NJyhs5PlGQ} {[}ES{]}
+  \emph{{[}canal y fecha POR VERIFICAR{]}}
+\end{itemize}

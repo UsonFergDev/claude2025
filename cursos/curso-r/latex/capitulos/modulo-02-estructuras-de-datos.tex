@@ -1,0 +1,228 @@
+\chapter{Módulo 2 --- Estructuras de datos}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Duración estimada:} 1.5 h teoría + 2.5 h práctica
+\item
+  \textbf{Objetivos de aprendizaje.} Al finalizar, la persona podrá:
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    \textbf{Crear} vectores, factores, listas, matrices y data frames.
+  \item
+    \textbf{Explicar} la coerción de tipos y el reciclaje de vectores.
+  \item
+    \textbf{Aplicar} indexación por posición, nombre y condición lógica
+    (\passthrough{\lstinline![ ]!}, \passthrough{\lstinline![[ ]]!},
+    \passthrough{\lstinline!$!}).
+  \item
+    \textbf{Clasificar} qué estructura conviene para un problema dado.
+  \end{enumerate}
+\end{itemize}
+
+\section{Contenidos}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Vectores atómicos: \passthrough{\lstinline!c()!},
+  \passthrough{\lstinline!seq()!}, \passthrough{\lstinline!rep()!},
+  \passthrough{\lstinline!length()!}.
+\item
+  Operaciones vectorizadas y reciclaje.
+\item
+  Coerción: jerarquía
+  \passthrough{\lstinline!logical < integer < numeric < character!}.
+\item
+  Valores especiales: \passthrough{\lstinline!NA!},
+  \passthrough{\lstinline!NULL!}, \passthrough{\lstinline!NaN!},
+  \passthrough{\lstinline!Inf!}.
+\item
+  Factores: niveles y orden.
+\item
+  Matrices: \passthrough{\lstinline!matrix()!},
+  \passthrough{\lstinline!dim()!}.
+\item
+  Listas: estructuras heterogéneas.
+\item
+  Data frames: la tabla de datos; \passthrough{\lstinline!str()!},
+  \passthrough{\lstinline!head()!}, \passthrough{\lstinline!summary()!},
+  \passthrough{\lstinline!nrow()!}.
+\item
+  Indexación: \passthrough{\lstinline![ ]!},
+  \passthrough{\lstinline![[ ]]!}, \passthrough{\lstinline!$!} y filtros
+  lógicos.
+\end{enumerate}
+
+\section{Desarrollo}
+
+\subsection{Vectores y vectorización}
+
+\begin{lstlisting}[language=R]
+unidades <- c(12, 7, 20, 3, 15)
+precios  <- c(4999, 7999, 899, 6499, 2499)
+ingresos <- unidades * precios          # operación elemento a elemento
+sum(ingresos)
+mean(unidades)
+length(unidades)
+1:10 * 2                                # reciclaje de un escalar
+\end{lstlisting}
+
+\subsection{Coerción y NA}
+
+\begin{lstlisting}[language=R]
+c(1, "dos", TRUE)       # todo se vuelve character
+c(1, TRUE, FALSE)       # 1 1 0 (logical -> numeric)
+x <- c(4, NA, 10)
+sum(x)                  # NA
+sum(x, na.rm = TRUE)    # 14
+is.na(x)                # FALSE TRUE FALSE
+\end{lstlisting}
+
+\subsection{Factores}
+
+\begin{lstlisting}[language=R]
+canal <- factor(c("En línea", "Departamental", "En línea", "Autoservicio"))
+levels(canal)                   # orden alfabético por defecto
+table(canal)
+talla <- factor(c("M", "S", "L", "M"), levels = c("S", "M", "L"), ordered = TRUE)
+talla < "L"
+\end{lstlisting}
+
+\subsection{Matrices y listas}
+
+\begin{lstlisting}[language=R]
+m <- matrix(1:6, nrow = 2)
+dim(m)
+m[2, 3]                         # fila 2, columna 3
+
+tienda <- list(id = "T01", region = "Norte", ventas = c(120, 98, 143))
+tienda$region
+tienda[["ventas"]][2]           # 98
+str(tienda)
+\end{lstlisting}
+
+\subsection{Data frames}
+
+\begin{lstlisting}[language=R]
+df <- data.frame(
+  producto = c("Smartphone A", "Tablet", "Audífonos"),
+  precio   = c(4999, 6499, 899),
+  unidades = c(12, 4, 20)
+)
+str(df)
+df$ingreso <- df$precio * df$unidades   # nueva columna
+df[df$unidades > 10, ]                  # filas que cumplen condición
+df[, c("producto", "ingreso")]          # columnas por nombre
+nrow(df); ncol(df)
+\end{lstlisting}
+
+\subsection{Leer el conjunto de datos del curso (R base)}
+
+\begin{lstlisting}[language=R]
+ventas <- read.csv("datos/ventas.csv")
+head(ventas)
+summary(ventas$unidades)
+\end{lstlisting}
+
+\section{Actividades y ejercicios}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Crea un vector con las temperaturas
+  \passthrough{\lstinline!c(22, 25, NA, 30, 28)!} y calcula su promedio
+  ignorando el \passthrough{\lstinline!NA!}.
+\item
+  Con \passthrough{\lstinline!ventas!}, ¿cuántas filas y columnas tiene?
+  ¿Cuántos \passthrough{\lstinline!NA!} hay en
+  \passthrough{\lstinline!unidades!}?
+\item
+  Convierte \passthrough{\lstinline!ventas$producto!} en factor y
+  muestra cuántos registros hay por producto.
+\item
+  Extrae las filas de \passthrough{\lstinline!ventas!} del producto
+  \passthrough{\lstinline!"Tablet"!} con más de 8 unidades.
+\item
+  Crea una lista \passthrough{\lstinline!resumen!} con el total de
+  unidades y el producto más frecuente.
+\end{enumerate}
+
+\subsection{Soluciones}
+
+\begin{lstlisting}[language=R]
+# 1
+temp <- c(22, 25, NA, 30, 28)
+mean(temp, na.rm = TRUE)                       # 26.25
+
+# 2
+dim(ventas)
+sum(is.na(ventas$unidades))                    # 40
+
+# 3
+ventas$producto <- factor(ventas$producto)
+table(ventas$producto)
+
+# 4
+tablets <- ventas[ventas$producto == "Tablet" &
+                  !is.na(ventas$unidades) &
+                  ventas$unidades > 8, ]
+head(tablets)
+
+# 5
+resumen <- list(
+  total_unidades = sum(ventas$unidades, na.rm = TRUE),
+  mas_frecuente  = names(which.max(table(ventas$producto)))
+)
+str(resumen)
+\end{lstlisting}
+
+\section{Evaluación (formativa)}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Quiz:} ¿Qué devuelve \passthrough{\lstinline!c(1, "a")!}?
+  ¿Cuál es la diferencia entre \passthrough{\lstinline!lista["x"]!} y
+  \passthrough{\lstinline!lista[["x"]]!}? ¿Para qué sirve
+  \passthrough{\lstinline!levels=!} en
+  \passthrough{\lstinline!factor()!}?
+\item
+  \textbf{Práctica calificada:} script que lea
+  \passthrough{\lstinline!ventas.csv!}, cree la columna
+  \passthrough{\lstinline!ingreso!} y muestre las 5 filas con mayor
+  ingreso (pista: \passthrough{\lstinline!order()!}, con
+  \passthrough{\lstinline!decreasing = TRUE!}).
+\end{itemize}
+
+\section{Referencias verificadas}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Libro:} Grolemund, G. (2014). \emph{Hands-On Programming with
+  R}. O'Reilly Media. ISBN 978-1-4493-5901-0.
+  \url{https://rstudio-education.github.io/hopr/} {[}EN{]} {[}OA en
+  línea{]} --- cap. ``R Objects'' y ``R Notation''.
+\item
+  \textbf{Libro:} Wickham, H. (2019). \emph{Advanced R} (2.ª ed.). CRC
+  Press. ISBN 978-0-8153-8457-1. \url{https://adv-r.hadley.nz/} {[}EN{]}
+  {[}OA en línea, CC BY-NC-SA 4.0{]} --- cap. 3 ``Vectors'' y cap. 4
+  ``Subsetting'' (lectura de profundización).
+\item
+  \textbf{Web:} R Core Team. \emph{An Introduction to R} --- secciones
+  ``Simple manipulations; numbers and vectors'' y ``Lists and data
+  frames''.
+  \url{https://cran.r-project.org/doc/manuals/r-release/R-intro.html}
+  {[}EN{]} {[}OA{]}
+\item
+  \textbf{Video:} freeCodeCamp.org. \emph{R Programming Tutorial --
+  Learn the Basics of Statistical Computing} {[}Video{]}. YouTube.
+  \url{https://youtu.be/_V8eKsto3Ug} {[}EN{]} --- secciones ``Data
+  Formats'', ``Factors'', ``Entering Data'', ``Importing Data''.
+\end{itemize}

@@ -1,0 +1,137 @@
+% Curso: Programación en R — de cero a análisis de datos
+% Compilar:  latexmk -pdf curso-r.tex      (o pdflatex dos veces)
+% Los capítulos se generan desde los .md con:  python3 convertir.py
+\documentclass[11pt, a4paper, oneside]{report}
+
+% === Idioma y codificación ===
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish, es-tabla, es-nodecimaldot, es-noshorthands]{babel}
+\usepackage{newunicodechar}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{²}{\textsuperscript{2}}
+
+% === Tipografía ===
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% === Tablas (salida de pandoc) ===
+\usepackage{longtable, booktabs, array, calc}
+\renewcommand{\arraystretch}{1.25}
+
+% === Layout y color ===
+\usepackage[margin=2.5cm, headheight=14pt]{geometry}
+\usepackage{xcolor}
+\definecolor{rblue}{HTML}{1F4E78}
+\definecolor{codebg}{HTML}{F5F7FA}
+\definecolor{codegray}{HTML}{6A737D}
+\definecolor{codestr}{HTML}{A31515}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\nouppercase{\leftmark}}
+\fancyhead[R]{\small Programación en R}
+\fancyfoot[C]{\thepage}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{rblue}}{}{0pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{-20pt}{24pt}
+
+% === Código R (listings; pandoc --listings) ===
+\usepackage{listings}
+\newcommand{\passthrough}[1]{#1}
+\providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\lstset{
+  language=R,
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{rblue}\bfseries,
+  commentstyle=\color{codegray}\itshape,
+  stringstyle=\color{codestr},
+  breaklines=true,
+  breakatwhitespace=false,
+  postbreak=\mbox{\textcolor{codegray}{$\hookrightarrow$}\space},
+  frame=single,
+  rulecolor=\color{codegray!40},
+  framesep=4pt,
+  xleftmargin=6pt, xrightmargin=6pt,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  upquote=true,
+  tabsize=2,
+  % Caracteres UTF-8 dentro del código (pdflatex)
+  literate=
+    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+    {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+    {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {¿}{{?`}}1 {¡}{{!`}}1
+    {—}{{---}}1 {–}{{--}}1 {·}{{\textperiodcentered}}1
+    {≥}{{$\geq$}}1 {≤}{{$\leq$}}1 {→}{{$\rightarrow$}}1 {²}{{\textsuperscript{2}}}1
+}
+% Quarto/Markdown no existen en listings: se muestran como texto plano.
+\lstdefinelanguage{markdown}{}
+
+% === Citas en bloque como notas destacadas ===
+\usepackage{mdframed}
+\renewenvironment{quote}
+  {\begin{mdframed}[linecolor=rblue, linewidth=2pt, topline=false,
+     bottomline=false, rightline=false, backgroundcolor=rblue!5,
+     innertopmargin=6pt, innerbottommargin=6pt]}
+  {\end{mdframed}}
+
+% === Enlaces ===
+\usepackage[colorlinks=true, linkcolor=rblue, urlcolor=rblue]{hyperref}
+\usepackage{xurl}   % permite cortar URLs largas en cualquier carácter
+\hypersetup{
+  pdftitle={Programación en R: de cero a análisis de datos},
+  pdfsubject={Curso modular de R},
+  pdfkeywords={R, tidyverse, ggplot2, Quarto, análisis de datos}
+}
+
+\setcounter{tocdepth}{1}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+
+\begin{document}
+
+% === Portada ===
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+  \centering
+  \vspace*{3cm}
+  {\color{rblue}\rule{\linewidth}{1.5pt}\par}
+  \vspace{0.8cm}
+  {\Huge\bfseries\color{rblue} Programación en R\par}
+  \vspace{0.4cm}
+  {\LARGE de cero a análisis de datos\par}
+  \vspace{0.8cm}
+  {\color{rblue}\rule{\linewidth}{1.5pt}\par}
+  \vspace{1.5cm}
+  {\large Curso modular · 8 módulos · $\sim$34 horas\par}
+  \vspace{0.3cm}
+  {\large Nivel: principiante $\rightarrow$ intermedio\par}
+  \vfill
+  {\large Material didáctico con ejercicios, soluciones y rúbricas\par}
+  \vspace{0.3cm}
+  {\normalsize Código verificado con R 4.3.3 y tidyverse 2.0.0\par}
+  \vspace{1cm}
+  {\large \today\par}
+\end{titlepage}
+\hypersetup{pageanchor=true}
+
+\tableofcontents
+
+\input{capitulos/00-presentacion}
+\input{capitulos/modulo-01-primeros-pasos}
+\input{capitulos/modulo-02-estructuras-de-datos}
+\input{capitulos/modulo-03-programacion}
+\input{capitulos/modulo-04-importar-y-ordenar}
+\input{capitulos/modulo-05-transformar-con-dplyr}
+\input{capitulos/modulo-06-visualizacion-ggplot2}
+\input{capitulos/modulo-07-estadistica-y-modelos}
+\input{capitulos/modulo-08-reportes-quarto-y-proyecto}
+
+\end{document}

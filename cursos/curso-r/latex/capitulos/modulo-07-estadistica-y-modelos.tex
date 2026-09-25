@@ -1,0 +1,204 @@
+\chapter{Módulo 7 --- Estadística y modelos en R}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Duración estimada:} 1.5 h teoría + 2.5 h práctica
+\item
+  \textbf{Objetivos de aprendizaje.} Al finalizar, la persona podrá:
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    \textbf{Calcular} estadísticos descriptivos (media, mediana,
+    desviación estándar, cuantiles, correlación).
+  \item
+    \textbf{Ejecutar} pruebas de hipótesis básicas
+    (\passthrough{\lstinline!t.test()!},
+    \passthrough{\lstinline!wilcox.test()!},
+    \passthrough{\lstinline!chisq.test()!}).
+  \item
+    \textbf{Ajustar} un modelo de regresión lineal con
+    \passthrough{\lstinline!lm()!} usando la sintaxis de fórmulas.
+  \item
+    \textbf{Interpretar} coeficientes, valores p, R² y residuos, y
+    \textbf{justificar} si el modelo es adecuado.
+  \end{enumerate}
+\end{itemize}
+
+\section{Contenidos}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Estadística descriptiva por grupo con \passthrough{\lstinline!dplyr!}.
+\item
+  Correlación: \passthrough{\lstinline!cor()!} (Pearson y Spearman).
+\item
+  Pruebas de hipótesis: t de Welch, Mann-Whitney/Wilcoxon, chi-cuadrada.
+\item
+  Fórmulas en R: \passthrough{\lstinline!y \~ x1 + x2!}.
+\item
+  Regresión lineal: \passthrough{\lstinline!lm()!},
+  \passthrough{\lstinline!summary()!}, \passthrough{\lstinline!coef()!},
+  \passthrough{\lstinline!confint()!},
+  \passthrough{\lstinline!predict()!}.
+\item
+  Diagnóstico con residuos; resultados ordenados con
+  \passthrough{\lstinline!broom::tidy()!}.
+\end{enumerate}
+
+\section{Desarrollo}
+
+\begin{lstlisting}[language=R]
+library(tidyverse)
+ventas  <- read_csv("datos/ventas.csv", show_col_types = FALSE)
+tiendas <- read_csv("datos/tiendas.csv", show_col_types = FALSE)
+ventas_det <- ventas |>
+  left_join(tiendas, by = "tienda_id") |>
+  drop_na(unidades) |>
+  mutate(temporada = if_else(month(fecha) %in% 11:12, "Nov-Dic", "Resto"))
+\end{lstlisting}
+
+\subsection{Descriptivos}
+
+\begin{lstlisting}[language=R]
+ventas_det |>
+  summarise(
+    media   = mean(unidades),
+    mediana = median(unidades),
+    de      = sd(unidades),
+    p90     = quantile(unidades, 0.9),
+    .by = producto
+  )
+\end{lstlisting}
+
+\subsection{Prueba t: ¿la temporada cambia las ventas?}
+
+\begin{lstlisting}[language=R]
+reloj <- ventas_det |> filter(producto == "Reloj")
+t.test(unidades ~ temporada, data = reloj)       # Welch por defecto
+wilcox.test(unidades ~ temporada, data = reloj)  # alternativa no paramétrica
+\end{lstlisting}
+
+\begin{quote}
+\textbf{Cuidado:} las observaciones semanales de una misma tienda no son
+del todo independientes. Aquí la prueba es ilustrativa; en un análisis
+formal hay que considerar la autocorrelación.
+\end{quote}
+
+\subsection{Chi-cuadrada: ¿la mezcla de productos depende del canal?}
+
+\begin{lstlisting}[language=R]
+tabla <- xtabs(unidades ~ canal + producto, data = ventas_det)
+tabla
+chisq.test(tabla)
+\end{lstlisting}
+
+\subsection{Regresión lineal}
+
+\begin{lstlisting}[language=R]
+semanal <- ventas_det |>
+  summarise(unidades = sum(unidades), .by = c(fecha, canal, temporada))
+
+modelo <- lm(unidades ~ temporada + canal, data = semanal)
+summary(modelo)
+confint(modelo)
+
+library(broom)
+tidy(modelo)          # coeficientes como tibble
+glance(modelo)        # R², AIC, etc.
+
+nuevo <- tibble(temporada = "Nov-Dic", canal = "En línea")
+predict(modelo, newdata = nuevo, interval = "prediction")
+\end{lstlisting}
+
+\subsection{Diagnóstico}
+
+\begin{lstlisting}[language=R]
+aug <- augment(modelo)
+ggplot(aug, aes(.fitted, .resid)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Residuos vs. ajustados", x = "Ajustado", y = "Residuo")
+\end{lstlisting}
+
+\section{Actividades y ejercicios}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Calcula la matriz de correlación entre
+  \passthrough{\lstinline!precio!} y \passthrough{\lstinline!unidades!}
+  a nivel registro. ¿Qué signo esperas y por qué?
+\item
+  Prueba si las unidades de \textbf{Audífonos} difieren entre las
+  regiones \textbf{Norte} y \textbf{Sur}.
+\item
+  Ajusta \passthrough{\lstinline!lm(unidades \~ temporada * canal)!} y
+  compara su R² ajustado con el modelo sin interacción.
+\item
+  Redacta en 3 líneas la interpretación del coeficiente
+  \passthrough{\lstinline!temporadaResto!} para un público no técnico.
+\end{enumerate}
+
+\subsection{Soluciones}
+
+\begin{lstlisting}[language=R]
+# 1: negativo; los productos caros se venden en menos unidades
+cor(ventas_det$precio, ventas_det$unidades)
+cor(ventas_det$precio, ventas_det$unidades, method = "spearman")
+
+# 2
+audif <- ventas_det |> filter(producto == "Audífonos", region %in% c("Norte", "Sur"))
+t.test(unidades ~ region, data = audif)
+
+# 3
+modelo_int <- lm(unidades ~ temporada * canal, data = semanal)
+c(sin_interaccion = glance(modelo)$adj.r.squared,
+  con_interaccion = glance(modelo_int)$adj.r.squared)
+anova(modelo, modelo_int)
+
+# 4 (ejemplo): "Fuera de noviembre-diciembre, cada canal vende en promedio
+# alrededor de X unidades menos por semana que en temporada alta, manteniendo
+# el canal constante; la diferencia es estadísticamente clara (p < 0.001)."
+coef(modelo)["temporadaResto"]
+\end{lstlisting}
+
+\section{Evaluación (sumativa parcial)}
+
+Informe breve (1 página) con: pregunta de negocio, prueba o modelo
+elegido y \textbf{por qué}, resultado con intervalo de confianza,
+verificación de supuestos y una limitación. Rúbrica: pertinencia del
+método (30 \%), ejecución correcta (30 \%), interpretación (30 \%),
+comunicación (10 \%).
+
+\section{Referencias verificadas}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Video:} StatQuest with Josh Starmer. \emph{Linear Regression
+  in R, Step-by-Step} {[}Video{]}. YouTube.
+  \url{https://www.youtube.com/watch?v=u1cc1r_Y7M0} {[}EN{]}
+  \emph{{[}fecha POR VERIFICAR{]}}
+\item
+  \textbf{Video:} StatQuest with Josh Starmer. \emph{Linear Regression
+  and Linear Models} {[}Lista de reproducción{]}. YouTube.
+  \url{https://www.youtube.com/playlist?list=PLblh5JKOoLUIzaEkCLIUxQFjPIlapw8nU}
+  {[}EN{]}
+\item
+  \textbf{Web:} R Core Team. \emph{An Introduction to R} --- sección
+  ``Statistical models in R''.
+  \url{https://cran.r-project.org/doc/manuals/r-release/R-intro.html}
+  {[}EN{]} {[}OA{]}
+\item
+  \textbf{Libro:} Wickham, H., Çetinkaya-Rundel, M., \& Grolemund, G.
+  (2023). \emph{R for Data Science} (2.ª ed.). O'Reilly Media. ISBN
+  978-1-4920-9740-2. Español: \url{https://davidrsch.github.io/r4ds-es/}
+  {[}ES{]} {[}OA{]} --- caps. de análisis exploratorio como base para
+  modelar.
+\end{itemize}

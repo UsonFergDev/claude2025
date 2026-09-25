@@ -1,0 +1,209 @@
+\chapter{Módulo 6 --- Visualización con ggplot2}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Duración estimada:} 1.5 h teoría + 2.5 h práctica
+\item
+  \textbf{Objetivos de aprendizaje.} Al finalizar, la persona podrá:
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    \textbf{Explicar} la gramática de gráficos: datos, estéticas
+    (\passthrough{\lstinline!aes!}), geometrías, escalas, facetas y
+    temas.
+  \item
+    \textbf{Construir} gráficos de barras, líneas, dispersión,
+    histogramas y cajas.
+  \item
+    \textbf{Seleccionar} el tipo de gráfico adecuado según la pregunta
+    (comparar, tendencia, distribución, relación).
+  \item
+    \textbf{Producir} gráficos listos para reporte (títulos, etiquetas,
+    formato de ejes) y exportarlos con
+    \passthrough{\lstinline!ggsave()!}.
+  \end{enumerate}
+\end{itemize}
+
+\section{Contenidos}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  La gramática de gráficos por capas.
+\item
+  \passthrough{\lstinline!aes()!}: \passthrough{\lstinline!x!},
+  \passthrough{\lstinline!y!}, \passthrough{\lstinline!color!},
+  \passthrough{\lstinline!fill!}, \passthrough{\lstinline!size!};
+  estéticas fijas vs.~mapeadas.
+\item
+  Geometrías: \passthrough{\lstinline!geom\_col!},
+  \passthrough{\lstinline!geom\_line!},
+  \passthrough{\lstinline!geom\_point!},
+  \passthrough{\lstinline!geom\_histogram!},
+  \passthrough{\lstinline!geom\_boxplot!}.
+\item
+  Facetas: \passthrough{\lstinline!facet\_wrap()!}.
+\item
+  Escalas y formato: \passthrough{\lstinline!scales::label\_dollar()!},
+  \passthrough{\lstinline!label\_percent()!}.
+\item
+  Etiquetas y temas: \passthrough{\lstinline!labs()!},
+  \passthrough{\lstinline!theme\_minimal()!}.
+\item
+  Exportar: \passthrough{\lstinline!ggsave()!}.
+\end{enumerate}
+
+\section{Desarrollo}
+
+\begin{lstlisting}[language=R]
+library(tidyverse)
+ventas  <- read_csv("datos/ventas.csv", show_col_types = FALSE) |>
+  mutate(ingreso = precio * unidades)
+tiendas <- read_csv("datos/tiendas.csv", show_col_types = FALSE)
+ventas_det <- left_join(ventas, tiendas, by = "tienda_id")
+\end{lstlisting}
+
+\subsection{Comparar categorías: barras}
+
+\begin{lstlisting}[language=R]
+por_producto <- ventas |>
+  summarise(ingreso = sum(ingreso, na.rm = TRUE), .by = producto)
+
+ggplot(por_producto, aes(x = ingreso, y = fct_reorder(producto, ingreso))) +
+  geom_col(fill = "steelblue") +
+  scale_x_continuous(labels = scales::label_dollar(scale = 1e-6, suffix = " M")) +
+  labs(title = "Ingreso anual por producto", x = "Ingreso (MXN)", y = NULL) +
+  theme_minimal()
+\end{lstlisting}
+
+\begin{quote}
+Barras \textbf{horizontales} y \textbf{ordenadas} facilitan leer nombres
+largos y comparar magnitudes.
+\end{quote}
+
+\subsection{Tendencia: líneas}
+
+\begin{lstlisting}[language=R]
+semanal <- ventas_det |>
+  summarise(ingreso = sum(ingreso, na.rm = TRUE), .by = c(fecha, canal))
+
+g_tendencia <- ggplot(semanal, aes(fecha, ingreso, color = canal)) +
+  geom_line(linewidth = 0.8) +
+  scale_y_continuous(labels = scales::label_dollar()) +
+  labs(title = "Ingreso semanal por canal, 2025", x = NULL, y = "Ingreso", color = "Canal") +
+  theme_minimal()
+g_tendencia
+\end{lstlisting}
+
+\subsection{Distribución: histograma y cajas}
+
+\begin{lstlisting}[language=R]
+ggplot(ventas, aes(unidades)) +
+  geom_histogram(binwidth = 2, fill = "grey40", color = "white") +
+  facet_wrap(~ producto, scales = "free_y") +
+  labs(title = "Distribución de unidades semanales por producto")
+
+ggplot(ventas_det, aes(region, unidades, fill = region)) +
+  geom_boxplot(show.legend = FALSE) +
+  labs(title = "Unidades por región", x = NULL)
+\end{lstlisting}
+
+\begin{quote}
+Los \passthrough{\lstinline!NA!} de \passthrough{\lstinline!unidades!}
+se descartan con una advertencia (``Removed rows\ldots{}''). Es
+informativa, no un error.
+\end{quote}
+
+\subsection{Relación: dispersión}
+
+\begin{lstlisting}[language=R]
+por_tienda <- ventas_det |>
+  summarise(unidades = sum(unidades, na.rm = TRUE),
+            ingreso  = sum(ingreso,  na.rm = TRUE), .by = c(tienda_id, canal))
+
+ggplot(por_tienda, aes(unidades, ingreso, color = canal)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 0.5) +
+  labs(title = "Unidades vs. ingreso por tienda")
+\end{lstlisting}
+
+\subsection{Exportar}
+
+\begin{lstlisting}[language=R]
+ggsave("tendencia_canal.png", g_tendencia, width = 8, height = 4.5, dpi = 300)
+\end{lstlisting}
+
+\section{Actividades y ejercicios}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Gráfico de barras apiladas al 100 \% de la participación de cada
+  producto dentro de cada canal
+  (\passthrough{\lstinline!position = "fill"!}).
+\item
+  Líneas de unidades mensuales por producto con
+  \passthrough{\lstinline!facet\_wrap()!}.
+\item
+  Mejora un gráfico ``por defecto'' aplicando: orden, título que afirme
+  la conclusión, ejes formateados y sin leyenda redundante.
+\item
+  Exporta tu mejor gráfico a PNG de 300 dpi.
+\end{enumerate}
+
+\subsection{Soluciones}
+
+\begin{lstlisting}[language=R]
+# 1
+ventas_det |>
+  summarise(ingreso = sum(ingreso, na.rm = TRUE), .by = c(canal, producto)) |>
+  ggplot(aes(canal, ingreso, fill = producto)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::label_percent()) +
+  labs(title = "Mezcla de productos por canal", x = NULL, y = "Participación", fill = NULL)
+
+# 2
+ventas |>
+  mutate(mes = floor_date(fecha, "month")) |>
+  summarise(unidades = sum(unidades, na.rm = TRUE), .by = c(mes, producto)) |>
+  ggplot(aes(mes, unidades)) +
+  geom_line() +
+  facet_wrap(~ producto, scales = "free_y") +
+  labs(title = "Las ventas de todos los productos suben en noviembre y diciembre",
+       x = NULL, y = "Unidades")
+\end{lstlisting}
+
+\section{Evaluación (formativa)}
+
+Galería de pares: cada persona presenta un gráfico y recibe
+retroalimentación con la lista de verificación: ¿responde una pregunta
+clara?, ¿el tipo de gráfico es adecuado?, ¿ejes y unidades legibles?,
+¿el título dice la conclusión?, ¿colores con propósito?
+
+\section{Referencias verificadas}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Libro:} Wickham, H., Çetinkaya-Rundel, M., \& Grolemund, G.
+  (2023). \emph{R for Data Science} (2.ª ed.). O'Reilly Media. ISBN
+  978-1-4920-9740-2. Español: \url{https://davidrsch.github.io/r4ds-es/}
+  {[}ES{]} {[}OA{]} --- caps. ``Visualización de datos'', ``Capas'',
+  ``Análisis exploratorio'', ``Comunicación''.
+\item
+  \textbf{Web:} Wickham, H., Navarro, D., \& Pedersen, T. L.
+  \emph{ggplot2: Elegant Graphics for Data Analysis} (3.ª ed., versión
+  en línea). \url{https://ggplot2-book.org/} {[}EN{]} {[}OA en línea{]}
+  \emph{{[}datos de edición impresa POR VERIFICAR{]}}
+\item
+  \textbf{Video:} freeCodeCamp.org. \emph{R Programming Tutorial --
+  Learn the Basics of Statistical Computing} {[}Video{]}. YouTube.
+  \url{https://youtu.be/_V8eKsto3Ug} {[}EN{]} --- secciones de gráficos
+  (\passthrough{\lstinline!plot()!}, barras, histogramas, dispersión) en
+  R base, útil para contrastar con ggplot2.
+\end{itemize}

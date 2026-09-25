@@ -1,0 +1,262 @@
+\chapter*{Presentación del curso}
+\addcontentsline{toc}{chapter}{Presentación del curso}\markboth{Presentación del curso}{}
+
+\textbf{Perfil:} capacitación en datos/analítica · \textbf{Nivel:}
+principiante → intermedio · \textbf{Duración:} 8 módulos,
+\textasciitilde34 h · \textbf{Modalidad:} autoformación o híbrida
+(sesiones de 2 h + práctica) · \textbf{Idioma:} español
+
+\section*{¿Para quién es?}
+\addcontentsline{toc}{section}{¿Para quién es?}
+
+Personas sin experiencia previa en programación (o que vienen de Excel)
+que quieren usar R para limpiar, analizar, visualizar y reportar datos.
+Los ejemplos usan un conjunto de \textbf{ventas simuladas de retail} (12
+tiendas, 3 canales, 4 regiones, 5 productos, 52 semanas de 2025).
+
+\section*{Objetivos del curso (diseño inverso)}
+\addcontentsline{toc}{section}{Objetivos del curso (diseño inverso)}
+
+Al terminar, la persona podrá:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Escribir} scripts de R legibles usando objetos, estructuras de
+  datos, control de flujo y funciones propias.
+\item
+  \textbf{Importar y ordenar} datos de CSV/Excel siguiendo los
+  principios de \emph{tidy data}.
+\item
+  \textbf{Transformar} y \textbf{resumir} datos con
+  \passthrough{\lstinline!dplyr!} para calcular indicadores por grupo.
+\item
+  \textbf{Construir} visualizaciones claras con
+  \passthrough{\lstinline!ggplot2!} adecuadas a cada pregunta.
+\item
+  \textbf{Aplicar e interpretar} estadística descriptiva, pruebas de
+  hipótesis y regresión lineal.
+\item
+  \textbf{Producir} un reporte reproducible con Quarto que responda una
+  pregunta de negocio.
+\end{enumerate}
+
+\textbf{Evidencia de logro:} ejercicios con solución en cada módulo, 3
+entregas parciales (módulos 3, 5 y 7) y un \textbf{proyecto integrador}
+evaluado con rúbrica (módulo 8).
+
+\section*{Mapa del curso}
+\addcontentsline{toc}{section}{Mapa del curso}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\#
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Módulo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Horas
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Nivel de Bloom
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Evaluación
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & Primeros pasos con R y RStudio & 4 & Recordar · Aplicar & Quiz \\
+2 & Estructuras de datos & 4 & Comprender · Aplicar & Quiz + práctica \\
+3 & Programación: control de flujo y funciones & 4 & Aplicar · Analizar
+& \textbf{Entrega 1} (rúbrica) \\
+4 & Importar y ordenar datos & 4 & Comprender · Aplicar & Quiz +
+práctica \\
+5 & Transformar datos con dplyr & 5 & Aplicar · Analizar &
+\textbf{Entrega 2}: mini-reporte de KPIs \\
+6 & Visualización con ggplot2 & 4 & Aplicar · Evaluar & Revisión entre
+pares \\
+7 & Estadística y modelos & 4 & Aplicar · Evaluar & \textbf{Entrega 3}:
+informe breve \\
+8 & Quarto y proyecto integrador & 5 & Crear & \textbf{Proyecto final}
+(rúbrica global) \\
+\end{longtable}
+
+\section*{Ponderación sugerida}
+\addcontentsline{toc}{section}{Ponderación sugerida}
+
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Componente & Peso \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Quizzes y ejercicios (M1, M2, M4, M6) & 15 \% \\
+Entrega 1 --- funciones (M3) & 15 \% \\
+Entrega 2 --- KPIs con dplyr (M5) & 20 \% \\
+Entrega 3 --- informe estadístico (M7) & 15 \% \\
+Proyecto integrador (M8) & 35 \% \\
+\end{longtable}
+
+\section*{Preparación}
+\addcontentsline{toc}{section}{Preparación}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Instala \textbf{R} (\url{https://cran.r-project.org/}) y
+  \textbf{RStudio Desktop}
+  (\url{https://posit.co/download/rstudio-desktop/}).
+\item
+  Instala los paquetes del curso:
+
+\begin{lstlisting}[language=R]
+install.packages(c("tidyverse", "readxl", "broom", "scales", "renv"))
+\end{lstlisting}
+\item
+  Abre esta carpeta como \textbf{Proyecto de RStudio} y genera los datos
+  de práctica (ya incluidos en \passthrough{\lstinline!datos/!}):
+
+\begin{lstlisting}[language=R]
+source("datos/generar_ventas.R")
+\end{lstlisting}
+\end{enumerate}
+
+Todo el código del curso se ejecutó y verificó con R 4.3.3 y tidyverse
+2.0.0 usando este directorio como directorio de trabajo.
+
+\section*{Estructura de archivos}
+\addcontentsline{toc}{section}{Estructura de archivos}
+
+\begin{lstlisting}
+curso-r/
+|-- README.md                          # este índice
+|-- modulo-01-primeros-pasos.md
+|-- modulo-02-estructuras-de-datos.md
+|-- modulo-03-programacion.md
+|-- modulo-04-importar-y-ordenar.md
+|-- modulo-05-transformar-con-dplyr.md
+|-- modulo-06-visualizacion-ggplot2.md
+|-- modulo-07-estadistica-y-modelos.md
+|-- modulo-08-reportes-quarto-y-proyecto.md
+|-- datos/
+|   |-- generar_ventas.R               # script reproducible (semilla fija)
+|   |-- ventas.csv                     # 3 120 filas: fecha, tienda, producto, precio, unidades
+|   `-- tiendas.csv                    # 12 tiendas: canal y región
+`-- latex/
+    |-- curso-r.tex                    # documento principal (portada, índice, preámbulo)
+    |-- capitulos/                     # un .tex por módulo (generados)
+    |-- convertir.py                   # regenera capitulos/ desde los .md (requiere pandoc)
+    `-- curso-r.pdf                    # versión compilada
+\end{lstlisting}
+
+\textbf{Versión LaTeX/PDF:} desde \passthrough{\lstinline!latex/!},
+ejecuta \passthrough{\lstinline!python3 convertir.py!} (solo si editaste
+los \passthrough{\lstinline!.md!}) y luego
+\passthrough{\lstinline!latexmk -pdf curso-r.tex!}. También se puede
+subir la carpeta \passthrough{\lstinline!latex/!} a Overleaf y compilar
+con pdfLaTeX.
+
+\section*{Bibliografía general}
+\addcontentsline{toc}{section}{Bibliografía general}
+
+Leyenda: {[}ES{]} español · {[}EN{]} inglés · {[}OA{]} acceso abierto.
+
+\subsection*{Libros}
+\addcontentsline{toc}{subsection}{Libros}
+
+\begin{itemize}
+\tightlist
+\item
+  Grolemund, G. (2014). \emph{Hands-On Programming with R}. O'Reilly
+  Media. ISBN 978-1-4493-5901-0.
+  \url{https://rstudio-education.github.io/hopr/} {[}EN{]} {[}OA en
+  línea{]}
+\item
+  Wickham, H. (2019). \emph{Advanced R} (2.ª ed.). CRC Press. ISBN
+  978-0-8153-8457-1. \url{https://adv-r.hadley.nz/} {[}EN{]} {[}OA en
+  línea{]}
+\item
+  Wickham, H., Çetinkaya-Rundel, M., \& Grolemund, G. (2023). \emph{R
+  for Data Science: Import, tidy, transform, visualize, and model data}
+  (2.ª ed.). O'Reilly Media. ISBN 978-1-4920-9740-2.
+  \url{https://r4ds.hadley.nz/} {[}EN{]} {[}OA en línea{]}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Traducción al español (2.ª ed.):
+    \url{https://davidrsch.github.io/r4ds-es/} {[}ES{]} {[}OA{]}
+  \item
+    Traducción comunitaria (1.ª ed.): \url{https://es.r4ds.hadley.nz/}
+    {[}ES{]} {[}OA{]}
+  \end{itemize}
+\end{itemize}
+
+\subsection*{Artículos}
+\addcontentsline{toc}{subsection}{Artículos}
+
+\begin{itemize}
+\tightlist
+\item
+  Wickham, H. (2014). Tidy data. \emph{Journal of Statistical Software,
+  59}(10), 1--23. \url{https://doi.org/10.18637/jss.v059.i10} {[}EN{]}
+  {[}OA{]}
+\item
+  Wickham, H., Averick, M., Bryan, J., Chang, W., McGowan, L. D.,
+  François, R., \ldots{} Yutani, H. (2019). Welcome to the tidyverse.
+  \emph{Journal of Open Source Software, 4}(43), 1686.
+  \url{https://doi.org/10.21105/joss.01686} {[}EN{]} {[}OA{]}
+\end{itemize}
+
+\subsection*{Documentación}
+\addcontentsline{toc}{subsection}{Documentación}
+
+\begin{itemize}
+\tightlist
+\item
+  R Core Team. \emph{An Introduction to R}.
+  \url{https://cran.r-project.org/doc/manuals/r-release/R-intro.html}
+  {[}EN{]} {[}OA{]}
+\item
+  Quarto. \emph{Tutorial: Computations}.
+  \url{https://quarto.org/docs/get-started/computations/rstudio}
+  {[}EN{]}
+\end{itemize}
+
+\subsection*{Videos}
+\addcontentsline{toc}{subsection}{Videos}
+
+\begin{itemize}
+\tightlist
+\item
+  freeCodeCamp.org. \emph{R Programming Tutorial -- Learn the Basics of
+  Statistical Computing} {[}Video{]} (Barton Poulson, \textasciitilde2
+  h). \url{https://youtu.be/_V8eKsto3Ug} {[}EN{]}
+\item
+  \emph{Curso completo de R para Data Science con Tidyverse} {[}Video{]}
+  (Juan Gabriel Gomila Salas).
+  \url{https://www.youtube.com/watch?v=9NJyhs5PlGQ} {[}ES{]}
+  \emph{{[}canal y fecha POR VERIFICAR{]}}
+\item
+  StatQuest with Josh Starmer. \emph{Linear Regression in R,
+  Step-by-Step} {[}Video{]}.
+  \url{https://www.youtube.com/watch?v=u1cc1r_Y7M0} {[}EN{]}
+\end{itemize}
+
+\subsection*{Nota de verificación}
+\addcontentsline{toc}{subsection}{Nota de verificación}
+
+Las referencias se verificaron mediante búsqueda web (título, autores,
+editorial, ISBN, DOI y existencia de la URL en índices de búsqueda) el
+2026-09-25. No fue posible abrir directamente las páginas desde el
+entorno de trabajo, por lo que las \textbf{fechas de publicación de los
+videos} y el \textbf{nombre exacto del canal} del video en español
+quedan marcados como \emph{POR VERIFICAR}. Revísalos antes de publicar
+el curso.

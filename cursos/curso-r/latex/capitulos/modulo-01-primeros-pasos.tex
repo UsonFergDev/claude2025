@@ -1,0 +1,229 @@
+\chapter{Módulo 1 --- Primeros pasos con R y RStudio}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Duración estimada:} 1.5 h teoría + 2.5 h práctica
+\item
+  \textbf{Objetivos de aprendizaje.} Al finalizar, la persona podrá:
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    \textbf{Identificar} los paneles de RStudio (consola, editor,
+    entorno, archivos/gráficos/ayuda).
+  \item
+    \textbf{Ejecutar} instrucciones en la consola y desde un script
+    \passthrough{\lstinline!.R!}.
+  \item
+    \textbf{Crear} objetos con \passthrough{\lstinline!<-!} y
+    \textbf{reconocer} sus tipos básicos
+    (\passthrough{\lstinline!numeric!},
+    \passthrough{\lstinline!integer!},
+    \passthrough{\lstinline!character!},
+    \passthrough{\lstinline!logical!}).
+  \item
+    \textbf{Usar} la ayuda (\passthrough{\lstinline!?!},
+    \passthrough{\lstinline!help()!},
+    \passthrough{\lstinline!example()!}) e \textbf{instalar} /
+    \textbf{cargar} paquetes.
+  \end{enumerate}
+\end{itemize}
+
+\section{Contenidos}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Qué es R y qué es RStudio (el lenguaje vs.~el entorno de desarrollo).
+\item
+  Instalación: R desde CRAN y RStudio Desktop (Posit).
+\item
+  Proyectos de RStudio (\passthrough{\lstinline!.Rproj!}) y el
+  directorio de trabajo.
+\item
+  La consola como calculadora; operadores aritméticos y de comparación.
+\item
+  Objetos y asignación; reglas de nombres
+  (\passthrough{\lstinline!snake\_case!}).
+\item
+  Tipos de datos atómicos y \passthrough{\lstinline!class()!},
+  \passthrough{\lstinline!typeof()!}.
+\item
+  Funciones: argumentos por posición y por nombre.
+\item
+  Paquetes: \passthrough{\lstinline!install.packages()!}
+  vs.~\passthrough{\lstinline!library()!}.
+\item
+  Comentarios con \passthrough{\lstinline!\#!} y buenas prácticas de
+  scripts.
+\end{enumerate}
+
+\section{Desarrollo}
+
+\subsection{R como calculadora}
+
+\begin{lstlisting}[language=R]
+2 + 3 * 4        # precedencia: 14
+(2 + 3) * 4      # 20
+10 / 3           # 3.333333
+10 %/% 3         # división entera: 3
+10 %% 3          # residuo (módulo): 1
+2^10             # potencia: 1024
+sqrt(144)        # 12
+\end{lstlisting}
+
+\subsection{Objetos y asignación}
+
+En R se asigna con \passthrough{\lstinline!<-!} (atajo en RStudio:
+\passthrough{\lstinline!Alt!} + \passthrough{\lstinline!-!}). El nombre
+va a la izquierda.
+
+\begin{lstlisting}[language=R]
+precio   <- 4999
+unidades <- 12
+ingreso  <- precio * unidades
+ingreso            # 59988
+\end{lstlisting}
+
+\subsection{Tipos básicos}
+
+\begin{lstlisting}[language=R]
+class(3.14)        # "numeric"
+class(5L)          # "integer" (la L fuerza entero)
+class("Norte")     # "character"
+class(TRUE)        # "logical"
+is.numeric(precio) # TRUE
+as.numeric("42")   # convierte texto a número: 42
+\end{lstlisting}
+
+\subsection{Funciones y argumentos}
+
+\begin{lstlisting}[language=R]
+round(3.14159, digits = 2)   # por nombre: 3.14
+round(3.14159, 2)            # por posición: 3.14
+seq(from = 1, to = 10, by = 3)
+\end{lstlisting}
+
+\subsection{Ayuda}
+
+\begin{lstlisting}[language=R]
+?mean              # abre la ayuda de mean()
+help("seq")
+example(mean)      # ejecuta los ejemplos de la ayuda
+\end{lstlisting}
+
+\subsection{Paquetes}
+
+Un paquete se \textbf{instala una sola vez} por computadora y se
+\textbf{carga en cada sesión}:
+
+\begin{lstlisting}[language=R]
+# install.packages("tidyverse")   # una vez (descomenta para instalar)
+library(tidyverse)                # en cada sesión
+\end{lstlisting}
+
+\begin{quote}
+\textbf{Buena práctica:} trabaja siempre dentro de un \textbf{Proyecto
+de RStudio} (\passthrough{\lstinline!File → New Project!}). Así las
+rutas son relativas (\passthrough{\lstinline!"datos/ventas.csv"!}) y
+evitas \passthrough{\lstinline!setwd()!} con rutas absolutas que solo
+funcionan en tu computadora.
+\end{quote}
+
+\section{Actividades y ejercicios}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Crea un proyecto de RStudio llamado \passthrough{\lstinline!curso-r!}
+  y un script \passthrough{\lstinline!modulo-01.R!}.
+\item
+  Calcula el ingreso de vender 35 audífonos de \$899 con 10 \% de
+  descuento.
+\item
+  Guarda tu nombre en un objeto \passthrough{\lstinline!nombre!} y
+  verifica su clase.
+\item
+  ¿Qué devuelve \passthrough{\lstinline!class(5 > 3)!}? ¿Y
+  \passthrough{\lstinline!as.numeric(TRUE)!}?
+\item
+  Usa la ayuda para averiguar qué hace el argumento
+  \passthrough{\lstinline!na.rm!} de \passthrough{\lstinline!mean()!}.
+\end{enumerate}
+
+\subsection{Soluciones}
+
+\begin{lstlisting}[language=R]
+# 2
+ingreso_desc <- 35 * 899 * (1 - 0.10)
+ingreso_desc                  # 28318.5
+
+# 3
+nombre <- "Ana"
+class(nombre)                 # "character"
+
+# 4
+class(5 > 3)                  # "logical"
+as.numeric(TRUE)              # 1
+
+# 5: na.rm = TRUE elimina los NA antes de calcular
+mean(c(10, NA, 20), na.rm = TRUE)   # 15
+\end{lstlisting}
+
+\section{Evaluación (formativa)}
+
+Quiz de 5 preguntas:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  ¿Cuál es la diferencia entre R y RStudio?
+\item
+  ¿Qué operador asigna valores a un objeto en el estilo recomendado?
+\item
+  ¿Qué devuelve \passthrough{\lstinline!10 \%\% 4!}?
+\item
+  ¿Por qué \passthrough{\lstinline!install.packages()!} no se escribe en
+  cada script?
+\item
+  Escribe una línea que calcule la raíz cuadrada de 2 redondeada a 3
+  decimales.
+\end{enumerate}
+
+\emph{Respuestas:} 1) R es el lenguaje/intérprete; RStudio es el IDE. 2)
+\passthrough{\lstinline!<-!}. 3) \passthrough{\lstinline!2!}. 4) Porque
+solo se instala una vez; en el script basta
+\passthrough{\lstinline!library()!}. 5)
+\passthrough{\lstinline!round(sqrt(2), 3)!}.
+
+\section{Referencias verificadas}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Web:} R Core Team. \emph{An Introduction to R}. CRAN.
+  \url{https://cran.r-project.org/doc/manuals/r-release/R-intro.html}
+  {[}EN{]} {[}OA{]}
+\item
+  \textbf{Libro:} Grolemund, G. (2014). \emph{Hands-On Programming with
+  R}. O'Reilly Media. ISBN 978-1-4493-5901-0. Versión en línea:
+  \url{https://rstudio-education.github.io/hopr/} {[}EN{]} {[}OA en
+  línea{]} --- caps. 1--2.
+\item
+  \textbf{Libro:} Wickham, H., Çetinkaya-Rundel, M., \& Grolemund, G.
+  (2023). \emph{R for Data Science} (2.ª ed.). O'Reilly Media. ISBN
+  978-1-4920-9740-2. Traducción al español:
+  \url{https://davidrsch.github.io/r4ds-es/} {[}ES{]} {[}OA{]} --- cap.
+  ``Flujo de trabajo: conceptos básicos''.
+\item
+  \textbf{Video:} freeCodeCamp.org. \emph{R Programming Tutorial --
+  Learn the Basics of Statistical Computing} {[}Video{]} (instructor:
+  Barton Poulson). YouTube. \url{https://youtu.be/_V8eKsto3Ug} {[}EN{]}
+  --- secciones ``Installing R'', ``RStudio'', ``Packages''.
+  \emph{{[}fecha de publicación POR VERIFICAR{]}}
+\end{itemize}

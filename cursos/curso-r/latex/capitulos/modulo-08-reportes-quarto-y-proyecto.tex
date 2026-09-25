@@ -1,0 +1,235 @@
+\chapter{Módulo 8 --- Reportes reproducibles con Quarto y proyecto
+integrador}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Duración estimada:} 1 h teoría + 4 h proyecto
+\item
+  \textbf{Objetivos de aprendizaje.} Al finalizar, la persona podrá:
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    \textbf{Crear} un documento Quarto (\passthrough{\lstinline!.qmd!})
+    que combine texto, código R y resultados.
+  \item
+    \textbf{Configurar} opciones de \emph{chunks}
+    (\passthrough{\lstinline!echo!}, \passthrough{\lstinline!warning!},
+    \passthrough{\lstinline!fig-cap!}) y formatos de salida (HTML, Word,
+    PDF).
+  \item
+    \textbf{Organizar} un proyecto reproducible (estructura de carpetas,
+    rutas relativas, \passthrough{\lstinline!renv!}).
+  \item
+    \textbf{Diseñar} y \textbf{producir} un análisis completo de
+    principio a fin (proyecto integrador).
+  \end{enumerate}
+\end{itemize}
+
+\section{Contenidos}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Por qué la reproducibilidad: el código \emph{es} la documentación del
+  análisis.
+\item
+  Anatomía de un \passthrough{\lstinline!.qmd!}: encabezado YAML,
+  Markdown y \emph{chunks} de código.
+\item
+  Opciones de \emph{chunk} con \passthrough{\lstinline!\#|!}.
+\item
+  Tablas con \passthrough{\lstinline!knitr::kable()!}; gráficos con
+  leyenda.
+\item
+  Renderizar: botón \textbf{Render} en RStudio o
+  \passthrough{\lstinline!quarto render!} en terminal.
+\item
+  Estructura de proyecto y control de dependencias con
+  \passthrough{\lstinline!renv!}.
+\item
+  Guía de estilo del tidyverse; control de versiones con Git
+  (introducción).
+\end{enumerate}
+
+\section{Desarrollo}
+
+\subsection{Un documento Quarto mínimo}
+
+Guarda esto como \passthrough{\lstinline!reporte.qmd!} dentro del
+proyecto y presiona \textbf{Render}:
+
+\begin{lstlisting}
+---
+title: "Reporte de ventas 2025"
+author: "Tu nombre"
+format:
+  html:
+    toc: true
+execute:
+  warning: false
+---
+
+## Resumen
+
+```{r}
+#| label: datos
+#| echo: false
+library(tidyverse)
+ventas <- read_csv("datos/ventas.csv", show_col_types = FALSE) |>
+  mutate(ingreso = precio * unidades)
+total <- sum(ventas$ingreso, na.rm = TRUE)
+```
+
+El ingreso total del año fue de **`r scales::dollar(total)`**.
+
+```{r}
+#| label: fig-producto
+#| fig-cap: "Ingreso anual por producto"
+ventas |>
+  summarise(ingreso = sum(ingreso, na.rm = TRUE), .by = producto) |>
+  ggplot(aes(ingreso, fct_reorder(producto, ingreso))) +
+  geom_col() +
+  labs(x = "Ingreso", y = NULL)
+```
+\end{lstlisting}
+
+\begin{itemize}
+\tightlist
+\item
+  \passthrough{\lstinline!`r expresion`!} inserta resultados
+  \textbf{dentro del texto}: si cambian los datos, el número se
+  actualiza solo.
+\item
+  Cambia \passthrough{\lstinline!format: html!} por
+  \passthrough{\lstinline!docx!} o \passthrough{\lstinline!pdf!} (este
+  último requiere TinyTeX:
+  \passthrough{\lstinline!quarto install tinytex!}).
+\end{itemize}
+
+\subsection{Proyecto reproducible}
+
+\begin{lstlisting}
+mi-analisis/
+|-- mi-analisis.Rproj
+|-- datos/          # datos crudos: nunca se editan a mano
+|-- R/              # funciones reutilizables
+|-- reporte.qmd
+`-- salidas/        # gráficos y tablas generadas
+\end{lstlisting}
+
+\begin{lstlisting}[language=R]
+# Registrar versiones de paquetes del proyecto (una vez, en la consola):
+# install.packages("renv"); renv::init()
+# Después de instalar o actualizar paquetes:
+# renv::snapshot()
+\end{lstlisting}
+
+\section{Proyecto integrador (capstone)}
+
+\textbf{Caso:} Eres analista de una cadena de electrónica. Dirección
+pide un \textbf{reporte de desempeño 2025} con recomendaciones para la
+temporada alta de 2026.
+
+\textbf{Entregables:}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Proyecto de RStudio con la estructura anterior.
+\item
+  \passthrough{\lstinline!reporte.qmd!} renderizado a HTML que incluya:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Limpieza documentada (faltantes, tipos, verificación de llaves).
+  \item
+    Tabla de KPIs por canal y región (ingreso, unidades, ticket
+    promedio, participación).
+  \item
+    Al menos 3 gráficos con títulos que afirmen la conclusión.
+  \item
+    Una prueba estadística o modelo con interpretación.
+  \item
+    Al menos una función propia en \passthrough{\lstinline!R/!} usada en
+    el reporte.
+  \item
+    Conclusiones y 3 recomendaciones accionables.
+  \end{itemize}
+\item
+  Presentación oral de 5 minutos.
+\end{enumerate}
+
+\subsection{Rúbrica global del proyecto}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Criterio (peso)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+4 --- Excelente
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+3 --- Bueno
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+2 --- Suficiente
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+1 --- Insuficiente
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Reproducibilidad (20 \%) & Renderiza sin errores en otra computadora;
+rutas relativas; \passthrough{\lstinline!renv!} & Renderiza con ajustes
+menores & Requiere varios ajustes & No renderiza \\
+Manejo de datos (20 \%) & Limpieza completa y justificada; verificación
+de llaves & Limpieza correcta, poco documentada & Limpieza parcial &
+Datos sin revisar \\
+Transformación y KPIs (20 \%) & KPIs correctos, código
+\passthrough{\lstinline!dplyr!} idiomático & Correctos con código
+redundante & Errores menores & Errores graves \\
+Visualización (15 \%) & Gráficos adecuados, claros y con mensaje &
+Adecuados, mejorables & Tipo de gráfico poco apropiado & Ilegibles \\
+Estadística (15 \%) & Método pertinente, supuestos revisados,
+interpretación correcta & Pertinente, interpretación parcial & Método
+dudoso & Ausente o incorrecto \\
+Comunicación (10 \%) & Conclusiones y recomendaciones claras y
+accionables & Claras pero generales & Confusas & Ausentes \\
+\end{longtable}
+
+\section{Referencias verificadas}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Web:} Posit / Quarto. \emph{Tutorial: Computations} (RStudio).
+  \url{https://quarto.org/docs/get-started/computations/rstudio}
+  {[}EN{]} {[}gratuito{]}
+\item
+  \textbf{Web:} Posit / Quarto. \emph{Using R}.
+  \url{https://quarto.org/docs/computations/r.html} {[}EN{]}
+  {[}gratuito{]}
+\item
+  \textbf{Web:} Posit / Quarto. \emph{Tutorial: Hello, Quarto}.
+  \url{https://quarto.org/docs/get-started/hello/rstudio.html} {[}EN{]}
+  {[}gratuito{]}
+\item
+  \textbf{Libro:} Wickham, H., Çetinkaya-Rundel, M., \& Grolemund, G.
+  (2023). \emph{R for Data Science} (2.ª ed.). O'Reilly Media. ISBN
+  978-1-4920-9740-2. Español: \url{https://davidrsch.github.io/r4ds-es/}
+  {[}ES{]} {[}OA{]} --- caps. ``Quarto'' y ``Formatos de Quarto''.
+\item
+  \textbf{Artículo:} Wickham, H. (2014). Tidy data. \emph{Journal of
+  Statistical Software, 59}(10), 1--23.
+  \url{https://doi.org/10.18637/jss.v059.i10} {[}EN{]} {[}OA{]}
+\end{itemize}

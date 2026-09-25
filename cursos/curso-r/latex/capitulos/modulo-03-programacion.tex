@@ -1,0 +1,238 @@
+\chapter{Módulo 3 --- Programación: control de flujo y funciones}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Duración estimada:} 1.5 h teoría + 2.5 h práctica
+\item
+  \textbf{Objetivos de aprendizaje.} Al finalizar, la persona podrá:
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    \textbf{Implementar} decisiones con
+    \passthrough{\lstinline!if!}/\passthrough{\lstinline!else!},
+    \passthrough{\lstinline!ifelse()!} y
+    \passthrough{\lstinline!dplyr::case\_when()!}.
+  \item
+    \textbf{Ejecutar} iteraciones con \passthrough{\lstinline!for!} y
+    \passthrough{\lstinline!while!}.
+  \item
+    \textbf{Escribir} funciones propias con argumentos, valores por
+    defecto y validaciones.
+  \item
+    \textbf{Comparar} un bucle con la alternativa vectorizada o
+    funcional (\passthrough{\lstinline!sapply()!},
+    \passthrough{\lstinline!purrr::map()!}).
+  \end{enumerate}
+\end{itemize}
+
+\section{Contenidos}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Operadores lógicos: \passthrough{\lstinline!\&!},
+  \passthrough{\lstinline!|!}, \passthrough{\lstinline"!"},
+  \passthrough{\lstinline!\&\&!}, \passthrough{\lstinline!||!},
+  \passthrough{\lstinline!\%in\%!}.
+\item
+  \passthrough{\lstinline!if!}, \passthrough{\lstinline!else if!},
+  \passthrough{\lstinline!else!}; \passthrough{\lstinline!ifelse()!}
+  vectorizado.
+\item
+  Bucles \passthrough{\lstinline!for!} y
+  \passthrough{\lstinline!while!}; \passthrough{\lstinline!break!} y
+  \passthrough{\lstinline!next!}.
+\item
+  Anatomía de una función: nombre, argumentos, cuerpo, valor de retorno.
+\item
+  Valores por defecto y validación con \passthrough{\lstinline!stop()!}.
+\item
+  Alcance (scope) de variables.
+\item
+  Vectorización y familia \passthrough{\lstinline!apply!}
+  (\passthrough{\lstinline!sapply!}, \passthrough{\lstinline!lapply!})
+  vs.~\passthrough{\lstinline!purrr::map()!}.
+\end{enumerate}
+
+\section{Desarrollo}
+
+\subsection{Condicionales}
+
+\begin{lstlisting}[language=R]
+unidades <- 25
+if (unidades >= 20) {
+  "Alta rotación"
+} else if (unidades >= 10) {
+  "Rotación media"
+} else {
+  "Baja rotación"
+}
+
+u <- c(3, 12, 25)
+ifelse(u >= 10, "Suficiente", "Reabastecer")   # vectorizado
+"Tablet" %in% c("Tablet", "Reloj")             # TRUE
+\end{lstlisting}
+
+\subsection{Bucles}
+
+\begin{lstlisting}[language=R]
+productos <- c("Smartphone A", "Tablet", "Reloj")
+for (p in productos) {
+  print(paste("Revisando inventario de", p))
+}
+
+stock <- 50
+semanas <- 0
+while (stock > 0) {
+  stock <- stock - 12
+  semanas <- semanas + 1
+}
+semanas        # semanas hasta agotar: 5
+\end{lstlisting}
+
+\subsection{Funciones}
+
+\begin{lstlisting}[language=R]
+ingreso <- function(precio, unidades, descuento = 0) {
+  if (descuento < 0 || descuento >= 1) {
+    stop("`descuento` debe estar en [0, 1).")
+  }
+  precio * unidades * (1 - descuento)
+}
+
+ingreso(4999, 10)
+ingreso(4999, 10, descuento = 0.15)
+ingreso(c(899, 2499), c(20, 8))     # funciona con vectores
+\end{lstlisting}
+
+\subsection{Vectorizar en lugar de iterar}
+
+\begin{lstlisting}[language=R]
+x <- 1:5
+# Con bucle
+cuadrados <- numeric(length(x))
+for (i in seq_along(x)) cuadrados[i] <- x[i]^2
+cuadrados
+# Vectorizado (preferido)
+x^2
+# Funcional
+sapply(x, function(v) v^2)
+library(purrr)
+map_dbl(x, \(v) v^2)               # \(v) es la sintaxis corta de function(v), R >= 4.1
+\end{lstlisting}
+
+\section{Actividades y ejercicios}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Escribe \passthrough{\lstinline!clasificar\_rotacion(u)!} que devuelva
+  \passthrough{\lstinline!"Alta"!}, \passthrough{\lstinline!"Media"!} o
+  \passthrough{\lstinline!"Baja"!} para un \textbf{vector} de unidades
+  (umbrales 20 y 10).
+\item
+  Escribe \passthrough{\lstinline!margen(precio, costo)!} que devuelva
+  el margen porcentual y lance error si
+  \passthrough{\lstinline!costo > precio!}.
+\item
+  Con un bucle \passthrough{\lstinline!for!}, imprime el total de
+  unidades por producto en \passthrough{\lstinline!ventas!}. Luego obtén
+  lo mismo con \passthrough{\lstinline!tapply()!}.
+\item
+  Simula lanzar un dado 1 000 veces con
+  \passthrough{\lstinline!sample()!} y calcula la proporción de seises.
+\end{enumerate}
+
+\subsection{Soluciones}
+
+\begin{lstlisting}[language=R]
+# 1 (dplyr::case_when es vectorizado y legible)
+clasificar_rotacion <- function(u) {
+  dplyr::case_when(
+    u >= 20 ~ "Alta",
+    u >= 10 ~ "Media",
+    TRUE    ~ "Baja"
+  )
+}
+clasificar_rotacion(c(3, 12, 25))
+
+# 2
+margen <- function(precio, costo) {
+  if (any(costo > precio)) stop("El costo no puede ser mayor que el precio.")
+  (precio - costo) / precio * 100
+}
+margen(100, 60)                   # 40
+
+# 3
+ventas <- read.csv("datos/ventas.csv")
+for (p in unique(ventas$producto)) {
+  total <- sum(ventas$unidades[ventas$producto == p], na.rm = TRUE)
+  cat(p, ":", total, "\n")
+}
+tapply(ventas$unidades, ventas$producto, sum, na.rm = TRUE)
+
+# 4
+set.seed(1)
+dado <- sample(1:6, 1000, replace = TRUE)
+mean(dado == 6)
+\end{lstlisting}
+
+\section{Evaluación (sumativa parcial)}
+
+Entrega un script \passthrough{\lstinline!funciones\_ventas.R!} con 3
+funciones documentadas (comentario de propósito, argumentos y retorno) y
+al menos una validación con \passthrough{\lstinline!stop()!}. Rúbrica:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Criterio
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+3 --- Logrado
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+2 --- En proceso
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+1 --- Inicial
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Correctitud & Las 3 funciones dan el resultado esperado & 2 funciones
+correctas & ≤ 1 correcta \\
+Vectorización & Aceptan vectores sin bucles innecesarios & Parcial &
+Solo escalares \\
+Validación & Mensajes de error claros & Validación incompleta & Sin
+validación \\
+Estilo & Nombres claros, comentarios útiles & Aceptable & Difícil de
+leer \\
+\end{longtable}
+
+\section{Referencias verificadas}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Libro:} Wickham, H., Çetinkaya-Rundel, M., \& Grolemund, G.
+  (2023). \emph{R for Data Science} (2.ª ed.). O'Reilly Media. ISBN
+  978-1-4920-9740-2. Español: \url{https://davidrsch.github.io/r4ds-es/}
+  {[}ES{]} {[}OA{]} --- caps. ``Funciones'' e ``Iteración''.
+\item
+  \textbf{Libro:} Grolemund, G. (2014). \emph{Hands-On Programming with
+  R}. O'Reilly Media. ISBN 978-1-4493-5901-0.
+  \url{https://rstudio-education.github.io/hopr/} {[}EN{]} {[}OA en
+  línea{]} --- proyecto ``Slot machine'' (if/else, bucles, funciones).
+\item
+  \textbf{Libro:} Wickham, H. (2019). \emph{Advanced R} (2.ª ed.). CRC
+  Press. ISBN 978-0-8153-8457-1. \url{https://adv-r.hadley.nz/} {[}EN{]}
+  {[}OA en línea{]} --- cap. 5 ``Control flow'' y cap. 6 ``Functions''.
+\end{itemize}

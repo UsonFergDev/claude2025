@@ -1,0 +1,217 @@
+\chapter{Módulo 4 --- Importar y ordenar datos (tidy data)}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Duración estimada:} 1.5 h teoría + 2.5 h práctica
+\item
+  \textbf{Objetivos de aprendizaje.} Al finalizar, la persona podrá:
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    \textbf{Explicar} los tres principios de los datos ordenados
+    (\emph{tidy data}).
+  \item
+    \textbf{Importar} archivos CSV y Excel con
+    \passthrough{\lstinline!readr!} y \passthrough{\lstinline!readxl!},
+    controlando tipos de columna.
+  \item
+    \textbf{Transformar} tablas entre formato ancho y largo con
+    \passthrough{\lstinline!pivot\_longer()!} /
+    \passthrough{\lstinline!pivot\_wider()!}.
+  \item
+    \textbf{Diferenciar} los problemas de calidad más comunes (tipos
+    erróneos, \passthrough{\lstinline!NA!}, duplicados).
+  \end{enumerate}
+\end{itemize}
+
+\section{Contenidos}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  El \emph{tidyverse} y los \emph{tibbles}.
+\item
+  Principios de datos ordenados: cada variable una columna, cada
+  observación una fila, cada valor una celda.
+\item
+  \passthrough{\lstinline!readr::read\_csv()!}, especificación de tipos
+  con \passthrough{\lstinline!col\_types!},
+  \passthrough{\lstinline!problems()!}.
+\item
+  \passthrough{\lstinline!readxl::read\_excel()!}: hojas y rangos.
+\item
+  \passthrough{\lstinline!tidyr::pivot\_longer()!} y
+  \passthrough{\lstinline!pivot\_wider()!}.
+\item
+  \passthrough{\lstinline!separate\_wider\_delim()!} y
+  \passthrough{\lstinline!unite()!}.
+\item
+  Manejo de \passthrough{\lstinline!NA!}:
+  \passthrough{\lstinline!drop\_na()!},
+  \passthrough{\lstinline!replace\_na()!}; duplicados con
+  \passthrough{\lstinline!distinct()!}.
+\item
+  Exportar: \passthrough{\lstinline!write\_csv()!}.
+\end{enumerate}
+
+\section{Desarrollo}
+
+\subsection{Importar con readr}
+
+\begin{lstlisting}[language=R]
+library(tidyverse)
+
+ventas <- read_csv("datos/ventas.csv", col_types = cols(
+  fecha     = col_date(),
+  tienda_id = col_character(),
+  producto  = col_character(),
+  precio    = col_double(),
+  unidades  = col_integer()
+))
+ventas
+glimpse(ventas)
+tiendas <- read_csv("datos/tiendas.csv", show_col_types = FALSE)
+\end{lstlisting}
+
+\subsection{Excel}
+
+\begin{lstlisting}[language=R]
+library(readxl)
+# excel_sheets("datos/archivo.xlsx")                 # lista las hojas
+# read_excel("datos/archivo.xlsx", sheet = "Ventas", range = "A1:E500")
+\end{lstlisting}
+
+\subsection{De ancho a largo y de regreso}
+
+Muchas hojas de cálculo guardan un mes por columna: eso \textbf{no} es
+\emph{tidy}, porque ``mes'' es una variable.
+
+\begin{lstlisting}[language=R]
+reporte_ancho <- tribble(
+  ~tienda, ~ene, ~feb, ~mar,
+  "T01",    120,   98,  143,
+  "T02",     87,  110,   95
+)
+
+reporte_largo <- reporte_ancho |>
+  pivot_longer(cols = ene:mar, names_to = "mes", values_to = "unidades")
+reporte_largo
+
+reporte_largo |>
+  pivot_wider(names_from = mes, values_from = unidades)
+\end{lstlisting}
+
+\begin{quote}
+\passthrough{\lstinline!|>!} es el \emph{pipe} nativo de R (≥ 4.1):
+\passthrough{\lstinline!x |> f(y)!} equivale a
+\passthrough{\lstinline!f(x, y)!}. Léelo como ``y luego''.
+\end{quote}
+
+\subsection{Separar y unir columnas}
+
+\begin{lstlisting}[language=R]
+codigos <- tibble(sku = c("CEL-001-NEGRO", "TAB-014-GRIS"))
+codigos |>
+  separate_wider_delim(sku, delim = "-", names = c("categoria", "numero", "color"))
+\end{lstlisting}
+
+\subsection{Valores faltantes y duplicados}
+
+\begin{lstlisting}[language=R]
+ventas |> summarise(faltantes = sum(is.na(unidades)))
+ventas_sin_na <- ventas |> drop_na(unidades)
+ventas |> mutate(unidades = replace_na(unidades, 0L)) |> head()
+ventas |> distinct(tienda_id, fecha, producto) |> nrow()   # verifica llave única
+\end{lstlisting}
+
+\section{Actividades y ejercicios}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Importa \passthrough{\lstinline!ventas.csv!} con
+  \passthrough{\lstinline!read\_csv()!} sin
+  \passthrough{\lstinline!col\_types!} y compara el tipo que asigna a
+  \passthrough{\lstinline!unidades!} y \passthrough{\lstinline!fecha!}
+  con la versión especificada.
+\item
+  Convierte \passthrough{\lstinline!ventas!} a formato ancho: una fila
+  por \passthrough{\lstinline!fecha!} y
+  \passthrough{\lstinline!tienda\_id!}, una columna por producto con las
+  unidades.
+\item
+  Regresa el resultado anterior a formato largo y comprueba que
+  recuperas el mismo número de filas.
+\item
+  Cuenta los \passthrough{\lstinline!NA!} de
+  \passthrough{\lstinline!unidades!} por producto.
+\end{enumerate}
+
+\subsection{Soluciones}
+
+\begin{lstlisting}[language=R]
+# 1
+v2 <- read_csv("datos/ventas.csv", show_col_types = FALSE)
+spec(v2)          # readr infiere fecha como date y unidades como double
+
+# 2
+ancho <- ventas |>
+  select(fecha, tienda_id, producto, unidades) |>
+  pivot_wider(names_from = producto, values_from = unidades)
+ancho
+
+# 3
+largo <- ancho |>
+  pivot_longer(-c(fecha, tienda_id), names_to = "producto", values_to = "unidades")
+nrow(largo) == nrow(ventas)    # TRUE
+
+# 4
+ventas |>
+  group_by(producto) |>
+  summarise(n_na = sum(is.na(unidades)))
+\end{lstlisting}
+
+\section{Evaluación (formativa)}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Quiz:} Da un ejemplo de tabla que viole cada principio de
+  \emph{tidy data}. ¿Qué función usarías para arreglarla?
+\item
+  \textbf{Práctica:} Recibe un Excel ``reporte mensual'' con meses en
+  columnas y entrégalo en formato largo como CSV con
+  \passthrough{\lstinline!write\_csv()!}.
+\end{itemize}
+
+\section{Referencias verificadas}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Artículo:} Wickham, H. (2014). Tidy data. \emph{Journal of
+  Statistical Software, 59}(10), 1--23.
+  \url{https://doi.org/10.18637/jss.v059.i10} {[}EN{]} {[}OA{]}
+\item
+  \textbf{Artículo:} Wickham, H., Averick, M., Bryan, J., Chang, W.,
+  McGowan, L. D., François, R., \ldots{} Yutani, H. (2019). Welcome to
+  the tidyverse. \emph{Journal of Open Source Software, 4}(43), 1686.
+  \url{https://doi.org/10.21105/joss.01686} {[}EN{]} {[}OA, CC BY 4.0{]}
+\item
+  \textbf{Libro:} Wickham, H., Çetinkaya-Rundel, M., \& Grolemund, G.
+  (2023). \emph{R for Data Science} (2.ª ed.). O'Reilly Media. ISBN
+  978-1-4920-9740-2. Español: \url{https://davidrsch.github.io/r4ds-es/}
+  {[}ES{]} {[}OA{]} --- caps. ``Ordenar datos'', ``Importación de
+  datos'', ``Hojas de cálculo''.
+\item
+  \textbf{Video:} Gomila Salas, J. G. (Frogames). \emph{Curso completo
+  de R para Data Science con Tidyverse -- R for Data Science en Español}
+  {[}Video{]}. YouTube.
+  \url{https://www.youtube.com/watch?v=9NJyhs5PlGQ} {[}ES{]}
+  \emph{{[}nombre exacto del canal y fecha POR VERIFICAR{]}}
+\end{itemize}
